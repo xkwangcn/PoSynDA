@@ -315,8 +315,8 @@ if not args.evaluate:
     initial_momentum = 0.1
     final_momentum = 0.001
 
-    # get training data
-    train_generator = ChunkedGenerator_Seq1(args.batch_size//args.stride, cameras_train, poses_train, poses_train_2d, args.number_of_frames,
+    # get training data,args.batch_size//args.stride
+    train_generator = ChunkedGenerator_Seq1(args.batch_size, cameras_train, poses_train, poses_train_2d, args.number_of_frames,
                                        pad=pad, causal_shift=causal_shift, shuffle=True, augment=args.data_augmentation,
                                        kps_left=kps_left, kps_right=kps_right, joints_left=joints_left, joints_right=joints_right)
     train_generator_eval = UnchunkedGenerator_Seq1(cameras_train, poses_train, poses_train_2d,

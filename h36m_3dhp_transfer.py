@@ -287,6 +287,7 @@ model_weight = TransformerModel(ntoken=3, ninp=512, nhead=8, nhid=512, nlayers=8
 #################
 causal_shift = 0
 if not args.nolog:
+    model_params = 1000000
     writer.add_text(args.log+'_'+TIMESTAMP + '/Trainable parameter count', str(model_params/1000000) + ' Million')
 
 # make model parallel
