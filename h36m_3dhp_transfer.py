@@ -305,7 +305,7 @@ if torch.cuda.is_available():
     model_weight_temp = nn.DataParallel(model_weight_temp)
     model_weight_temp = model_weight_temp.cuda()
 
-checkpoint = torch.load('checkpoint/model_h36m/h36m_best_epoch.bin', map_location=lambda storage, loc: storage)
+checkpoint = torch.load('checkpoint/best_epoch.bin', map_location=lambda storage, loc: storage)
 print('This model was trained for {} epochs'.format(checkpoint['epoch']))
 model_pos_train.load_state_dict(checkpoint['model_pos'], strict=False)
 
@@ -579,7 +579,7 @@ if not args.evaluate:
             ##### convert size
             tar_inputs_3d_p = tar_inputs_3d
             
-            tar_inputs_2d, tar_inputs_3d, tar_valid_frame = eval_data_prepare(receptive_field, tar_inputs_2d, tar_inputs_3d_p, inputs_valid)
+            tar_inputs_2d, tar_inputs_3d, tar_valid_frame = eval_data_prepare(receptive_field, tar_inputs_2d, tar_inputs_3d_p, tar_inputs_valid)
             tar_inputs_2d_flip, _, _ = eval_data_prepare(receptive_field, tar_inputs_2d_flip, tar_inputs_3d_p, tar_inputs_valid)
 
             if torch.cuda.is_available():
@@ -636,7 +636,7 @@ if not args.evaluate:
                 reproj_2d = reproj_2d.reshape(b, t, h, f, j_sz, 2)
 
                 cam_single_gt = cam.unsqueeze(0).repeat(b * f, 1).cuda()
-                input_3d_reproj = inputs_3d_single + traj
+                input_3d_reproj = tar_inputs_3d_single + traj
                 input_3d_reproj = input_3d_reproj.reshape(b * f, 17, 3)
                 reproj_2d_gt = reproject_func(input_3d_reproj, cam_single_gt)
                 reproj_2d_gt = reproj_2d_gt.reshape(b, f, 17, 2)
@@ -661,10 +661,10 @@ if not args.evaluate:
 
                 loss_total = torch.mean(loss_total)
 
-                epoch_loss_3d_train += inputs_3d_single.shape[0] * inputs_3d_single.shape[1] * loss_total.item()
-                epoch_loss_3d_pos_train += inputs_3d_single.shape[0] * inputs_3d_single.shape[1] * loss_3d.item()
-                epoch_loss_2d_pos_train += inputs_3d_single.shape[0] * inputs_3d_single.shape[1] * loss_2d.item()
-                N += inputs_3d_single.shape[0] * inputs_3d_single.shape[1]
+                epoch_loss_3d_train += tar_inputs_3d_single.shape[0] * tar_inputs_3d_single.shape[1] * loss_total.item()
+                epoch_loss_3d_pos_train += tar_inputs_3d_single.shape[0] * tar_inputs_3d_single.shape[1] * loss_3d.item()
+                epoch_loss_2d_pos_train += tar_inputs_3d_single.shape[0] * tar_inputs_3d_single.shape[1] * loss_2d.item()
+                N += tar_inputs_3d_single.shape[0] * tar_inputs_3d_single.shape[1]
 
                 optimizer.step()
                 
@@ -676,8 +676,8 @@ if not args.evaluate:
             
             b, f, n, c = src_inputs_3d.shape
             source_3d = src_inputs_3d.reshape(b*f, n, c)
-            tb, tf, tn, tc = inputs_2d.shape
-            target_2d = inputs_2d.reshape(tb*tf, tn, tc).cpu()
+            tb, tf, tn, tc = src_inputs_2d.shape
+            target_2d = src_inputs_2d.reshape(tb*tf, tn, tc).cpu()
             if keys == "TS5" or keys == "TS6":
                 cam = cam_2.clone()
                 cam_data = cam_data_2.copy()
